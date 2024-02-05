@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_CONTACTS 100
+
+typedef struct {
+    char name[50];
+    char phone_number[20];
+} Contact;
+
+typedef struct {
+    Contact contacts[MAX_CONTACTS];
+    int count;
+} ContactManagementSystem;
+
+void add_contact(ContactManagementSystem *cms) {
+    if (cms->count < MAX_CONTACTS) {
+        printf("Enter the contact name: ");
+        scanf("%s", cms->contacts[cms->count].name);
+
+        printf("Enter the contact phone number: ");
+        scanf("%s", cms->contacts[cms->count].phone_number);
+
+        printf("Contact added successfully!\n");
+        cms->count++;
+    } else {
+        printf("Contact storage is full. Cannot add more contacts.\n");
+    }
+}
+
+void view_contacts(ContactManagementSystem *cms) {
+    if (cms->count == 0) {
+        printf("No contacts available.\n");
+    } else {
+        printf("Contacts:\n");
+        for (int i = 0; i < cms->count; i++) {
+            printf("Name: %s, Phone Number: %s\n", cms->contacts[i].name, cms->contacts[i].phone_number);
+        }
+    }
+}
+
+void search_contact(ContactManagementSystem *cms) {
+    char search_name[50];
+    printf("Enter the name to search: ");
+    scanf("%s", search_name);
+
+    for (int i = 0; i < cms->count; i++) {
+        if (strcmp(cms->contacts[i].name, search_name) == 0) {
+            printf("Contact found:\n");
+            printf("Name: %s, Phone Number: %s\n", cms->contacts[i].name, cms->contacts[i].phone_number);
+            return;
+        }
+    }
+
+    printf("Contact not found for name: %s\n", search_name);
+}
+
+int main() {
+    ContactManagementSystem cms;
+    cms.count = 0;
+
+    while (1) {
+        printf("\nContact Management System Menu:\n");
+        printf("1. Add Contact\n");
+        printf("2. View Contacts\n");
+        printf("3. Search Contact\n");
+        printf("4. Exit\n");
+
+        int choice;
+        printf("Enter your choice (1-4): ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                add_contact(&cms);
+                break;
+            case 2:
+                view_contacts(&cms);
+                break;
+            case 3:
+                search_contact(&cms);
+                break;
+            case 4:
+                printf("Exiting Contact Management System. Goodbye!\n");
+                exit(0);
+            default:
+                printf("Invalid choice. Please enter a number between 1 and 4.\n");
+        }
+    }
+
+    return 0;
+}
