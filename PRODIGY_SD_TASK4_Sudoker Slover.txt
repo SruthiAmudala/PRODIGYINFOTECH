@@ -1,83 +1,103 @@
-#include <iostream>
-#include <vector>
-using namespace std;
-const int N = 9; // Size of the Sudoku grid
+import java.util.Scanner;
+public class SudukuSolver {
 
-// Function to print the Sudoku grid
-void printGrid(vector<vector<int>>& grid) {
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            cout << grid[i][j] << " ";
-        }
-        cout << endl;
-    }
-}
+    private static final int SIZE = 9;
 
-// Function to check if it's safe to place 'num' at cell (row, col)
-bool isSafe(vector<vector<int>>& grid, int row, int col, int num) {
-    // Check the row and column
-    for (int i = 0; i < N; ++i) {
-        if (grid[row][i] == num || grid[i][col] == num) {
-            return false;
+    public static void main(String[] args) {
+        int[][] puzzle = readSudokuFromUser();
+
+        System.out.println("Original Sudoku Puzzle:");
+        printSudoku(puzzle);
+
+        SudukuSolver solver = new SudukuSolver();
+        if (solver.solveSudoku(puzzle)) {
+            System.out.println("\nSudoku Solved:");
+            printSudoku(puzzle);
+        } else {
+            System.out.println("No solution exists for the provided Sudoku puzzle.");
         }
     }
 
-    // Check the 3x3 box
-    int boxRowStart = row - row % 3;
-    int boxColStart = col - col % 3;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            if (grid[boxRowStart + i][boxColStart + j] == num) {
+    private static int[][] readSudokuFromUser() {
+        Scanner scanner = new Scanner(System.in);
+        int[][] puzzle = new int[SIZE][SIZE];
+
+        System.out.println("Enter the Sudoku puzzle (use '0' for empty cells):");
+
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                puzzle[i][j] = scanner.nextInt();
+            }
+        }
+
+        return puzzle;
+    }
+
+    public boolean solveSudoku(int[][] puzzle) {
+        int[] emptyCell = findEmptyCell(puzzle);
+
+        if (emptyCell == null) {
+            return true; // Puzzle solved
+        }
+
+        int row = emptyCell[0];
+        int col = emptyCell[1];
+
+        for (int num = 1; num <= SIZE; num++) {
+            if (isValidMove(puzzle, row, col, num)) {
+                puzzle[row][col] = num;
+
+                if (solveSudoku(puzzle)) {
+                    return true; // Continue solving
+                }
+
+                puzzle[row][col] = 0; // Backtrack if the current move doesn't lead to a solution
+            }
+        }
+
+        return false; // No solution found at this point
+    }
+
+    private int[] findEmptyCell(int[][] puzzle) {
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                if (puzzle[row][col] == 0) {
+                    return new int[]{row, col};
+                }
+            }
+        }
+        return null; // Puzzle is already solved
+    }
+
+    private boolean isValidMove(int[][] puzzle, int row, int col, int num) {
+        // Check if 'num' is not in the same row and column
+        for (int i = 0; i < SIZE; i++) {
+            if (puzzle[row][i] == num || puzzle[i][col] == num) {
                 return false;
             }
         }
-    }
 
-    return true;
-}
+        // Check if 'num' is not in the same 3x3 subgrid
+        int subgridRowStart = row - row % 3;
+        int subgridColStart = col - col % 3;
 
-// Sudoku solver using backtracking
-bool solveSudoku(vector<vector<int>>& grid) {
-    for (int row = 0; row < N; ++row) {
-        for (int col = 0; col < N; ++col) {
-            // Find an empty cell
-            if (grid[row][col] == 0) {
-                for (int num = 1; num <= 9; ++num) {
-                    if (isSafe(grid, row, col, num)) {
-                        grid[row][col] = num;
-                        if (solveSudoku(grid)) {
-                            return true; // If it leads to a solution
-                        }
-                        grid[row][col] = 0; // If it doesn't lead to a solution, backtrack
-                    }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (puzzle[subgridRowStart + i][subgridColStart + j] == num) {
+                    return false;
                 }
-                return false; // If no number can be placed, backtrack further
             }
         }
-    }
-    return true; // All cells are filled
-}
 
-int main() 
-{
-    vector<vector<int>> grid = {
-        {5, 3, 0, 0, 7, 0, 0, 0, 0},
-        {6, 0, 0, 1, 9, 5, 0, 0, 0},
-        {0, 9, 8, 0, 0, 0, 0, 6, 0},
-        {8, 0, 0, 0, 6, 0, 0, 0, 3},
-        {4, 0, 0, 8, 0, 3, 0, 0, 1},
-        {7, 0, 0, 0, 2, 0, 0, 0, 6},
-        {0, 6, 0, 0, 0, 0, 2, 8, 0},
-        {0, 0, 0, 4, 1, 9, 0, 0, 5},
-        {0, 0, 0, 0, 8, 0, 0, 7, 9}
-    };
-
-    if (solveSudoku(grid)) {
-        cout << "Sudoku solved:" << endl;
-        printGrid(grid);
-    } else {
-        cout << "No solution exists." << endl;
+        return true;
     }
 
-    return 0;
+    private static void printSudoku(int[][] puzzle) {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                System.out.print(puzzle[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
 }
